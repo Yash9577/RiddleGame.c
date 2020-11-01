@@ -1,1 +1,1 @@
-# RiddleGame.c
+# RiddleGame
