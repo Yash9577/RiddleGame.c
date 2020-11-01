@@ -1,0 +1,247 @@
+//Decaring required Libraries
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <time.h>
+
+//Declaring the Funcitons and their parameters
+//---------------------------------------------------------------------------
+void printarr (int rows, int col, int arr[rows][col]);
+
+void fillarr (int rows, int col, int arr[rows][col]);
+
+int checkunique (int rows, int col, int arr[rows][col], int num);
+
+void validmove (int rows, int col, int arr[rows][col], int oldspot[], int newspot[]);
+
+void swap (int rows, int col, int arr[rows][col], int oldspot[], int newspot[]);
+
+void findspot (int rows, int col, int arr[rows][col], int spot[], int num);
+
+int checkwin (int rows, int col, int arr[rows][col]);
+//---------------------------------------------------------------------------
+
+int main(void) {
+  srand(time(NULL));  //required to randomize the numbers properly
+
+  int rows,       //variable used for the amount of rows in the gametable
+      col,        //Variable used for the amount of columns in the gametable
+      
+      move = 0,   //Variable  used for the current number the player is trying to move to
+
+      win = 0,    //Variable used to check if the player won or not
+      cont = 1;   //Variable used to check if player wants to continue playing or not
+  
+  int oldspot[2],   //Array that stores the coordinates for the blank spot
+      newspot[2];   //Array that stores the coordinates of the new spot wwhere the player is trying to move
+
+  //Outputing a Welcome message to the player
+  printf("Welcome to the Number Riddle Puzzle Game. Have fun!\n");
+
+  //Overarchign loop for the entire game
+  while (cont){
+
+    //Here we ask and input the values for the rows and columns from ther player
+    printf("How many rows would you like? ");
+    scanf("%d", &rows);
+    printf("How many columns would you like to have? ");
+    scanf("%d", &col);
+
+    //Here we instantiate the 2 dimentional array for the game
+    int game[rows][col];
+
+    //Here we fill the game with random values so the player has a unique game everytime
+    fillarr(rows, col, game);
+
+    //Here we find where the blank spot is located
+    findspot(rows, col, game, oldspot, 0);
+
+    //Here we start the loop for the current game the player is playing
+    while (!win){
+      //Here we print out the game table for the player
+      printarr(rows, col, game);
+
+      //Here we ask and input the number at which the player would like to move to
+      printf("Enter the number you would like to move to. The number may only be directly adjacent. (Enter 0 to exit the current game) ");
+      scanf("%d", &move);
+
+      //Here we check if the player entered 0 to end the current game
+      if (move == 0) break;
+
+      //Here we find the coordinate where the new value is located
+      findspot(rows, col, game, newspot, move);
+
+      //Here we check if the new spot is a valid spot to move to
+      validmove(rows, col, game, oldspot, newspot);
+
+      //Here we check if the player won the game
+      win = checkwin(rows, col, game);
+    }
+
+    //Here we output a winning or a losing message to the player depending on if they won or not
+    if (win)
+      printf("Congradulations on winning! Great job!\n");
+    else 
+      printf("Looks like you did not finish. Better luck next time.\n");
+    win = 0;
+
+    //Here we ask the player if they would like to play with a new gametable or stop playing altogether
+    printf("\n\nWould you like to continue playing with a new gametable? Enter 0 for no, Enter 1 for yes.");
+    scanf("%d", &cont);
+
+  }
+
+  //Here we print a final goodbye message to the player
+  printf("Thankyou for playing the Number Riddle Puzzle Game. Goodbye :)");
+  return 0;
+}
+
+//---------------------------------------------------------------------------
+//This function takes in the game and it's size and outputs it to the player
+void printarr (int rows, int col, int arr[rows][col]){
+
+  //This first for loop incriments i with the amount of rows
+  for (int a = 0; a < rows; a++){
+
+    //This second for loop incriments j with the amount of columns 
+    for(int b = 0; b < col; b++){
+
+      //Here if the number is 0, we output a blank to the player as is required for the game
+      if (arr[a][b] == 0)
+        printf("|     ");
+
+      //These next three if statements print out the number with proper formatting so the game looks good
+      else if (arr[a][b] >= 100)
+        printf("| %d ", arr[a][b]);
+      else if (arr[a][b] >= 10)
+        printf("|  %d ", arr[a][b]);
+      else 
+        printf("|  %d  ", arr[a][b]);
+    }
+    //Here we end the row wit the a verticle line for formatting
+    printf("|\n");
+  }
+}
+//---------------------------------------------------------------------------
+//Here we fill the array with random values
+void fillarr (int rows, int col, int arr[rows][col]){
+  
+  //Here we instantiate the values needed for the funciton
+  int unique = 1,   //This variable is changed if the temporary value is in the game already or not
+      temp = 0;     //This variable stores the temporary value that is then checked to see if its in the code already or not. If it isn't, it is inserted into the array
+
+  //Here we fill the game with -1 in all the spots. This is due to how when instantiating an array, most of the spots are filled with 0
+  for (int a = 0; a < rows; a++){
+    for (int b = 0; b < col; b++){
+    arr[a][b] = -1;
+    }
+  }
+
+  //Here we fill the array
+  for (int a = 0; a < rows; a++){
+    for (int b = 0; b < col; b++){
+
+      //This while loop continues until a unique number is found
+      while (unique){
+
+        //Here we find a new random number
+        temp = (rand() % (rows * col));
+
+        //Here we check if the number is unique or not
+        unique = checkunique(rows, col, arr , temp);
+      }
+
+      //If the temporary number is found to be unique, the number is placed in the gametable
+      arr[a][b] = temp;
+      //Here we reset the values for temp and unique
+      temp = 0;
+      unique = 1;
+    }
+  }
+}
+//---------------------------------------------------------------------------
+//This function checks if a given number is in the arrray already 
+int checkunique (int rows, int col, int arr[rows][col], int num){
+  
+  for (int a =0; a < rows; a++){
+    for (int b = 0; b < col; b++){
+      //This if statement checks if the current spot in the array is equivalent to the number we are checking for
+      if (arr[a][b] == num)
+      //If the number is found to be in the array, we return 1
+      return 1;
+    }
+  }
+
+  //If the number is not found to be in the array, we return 0
+  return 0;
+}
+//---------------------------------------------------------------------------
+//This function checks if the new spot is in a valid position to be swaped
+void validmove (int rows, int col, int arr[rows][col], int oldspot[], int newspot[]){
+  
+  //This if statement checks if the two values (the blank and the new spot) are located in the same row and to the left or right of the blank
+  if ((oldspot[0] == newspot[0]) && 
+      ((oldspot[1] - newspot[1] == 1) || newspot[1] - oldspot[1] == 1)){
+    //If it is found to be either to the left or the right of the blank, we call on the swap funciton to swap the two values
+    swap(rows, col, arr, oldspot, newspot);
+  }
+
+  //This if statment checks if the values are located directly above or below oneanother
+  else if ((oldspot[1] == newspot[1]) && 
+      ((oldspot[0] - newspot[0] == 1) || newspot[0] - oldspot[0] == 1)){
+    swap(rows, col, arr, oldspot, newspot);
+  }
+
+  //If it is found that they are not located directly adjacent, an error message is outputted to the player
+  else {
+    printf("That is an invalid move. Enter an adjacent tile.\n");
+  }
+}
+//---------------------------------------------------------------------------
+//This function swaps two given values in the game
+void swap (int rows, int col, int arr[rows][col], int oldspot[], int newspot[]){
+
+  //Here we asign the value that the player chose to the blank spot
+  arr[ oldspot[0] ][ oldspot[1] ] = arr[ newspot[0] ][ newspot[1] ];
+
+  //Here we asign a 0 value to the spot where the number was located before
+  arr[ newspot[0] ][ newspot[1] ] = 0;
+
+  //Here we assign the coordinates for the 
+  oldspot[0] = newspot[0];
+  oldspot[1] = newspot[1];
+}
+//---------------------------------------------------------------------------
+//This funciton find the coordinates for a given value in the gametable
+void findspot (int rows, int col, int arr[rows][col], int spot[], int num){
+  for (int a = 0; a < rows; a++){
+    for (int b = 0; b < col; b++){
+
+      //This if statement checks if the current spot is the number we are looking for
+      if (arr[a][b] == num){
+
+        //Here we assign the coordinates to the array
+        spot[0] = a;
+        spot[1] = b;
+      }
+    }
+  }
+}
+//---------------------------------------------------------------------------
+//Here we check if the player's game has a winning table
+int checkwin (int rows, int col, int arr[rows][col]){
+  int temp = 1;
+  
+  for (int a = 0; a < rows; a++){
+    for (int b = 0; b < col; b++){
+      if (a == (rows - 1) && b == (col - 1)) 
+        break;
+      else if (arr[a][b] != temp)
+        return 0;
+      temp++;
+    }
+  }
+
+  return 1;
+}
+//---------------------------------------------------------------------------
